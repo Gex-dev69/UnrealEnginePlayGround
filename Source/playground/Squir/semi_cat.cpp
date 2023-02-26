@@ -17,7 +17,7 @@ Asemi_cat::Asemi_cat()
 
 
 	GetCharacterMovement()->JumpZVelocity = 700.f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->MaxWalkSpeed = 270.f;
 }
 
 // Called when the game starts or when spawned
