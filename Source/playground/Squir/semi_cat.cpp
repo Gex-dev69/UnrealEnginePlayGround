@@ -8,6 +8,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include <Kismet/GameplayStatics.h>
+#include "Animation/AnimMontage.h"
 
 // Sets default values
 Asemi_cat::Asemi_cat()
@@ -55,15 +57,31 @@ Asemi_cat::Asemi_cat()
 void Asemi_cat::BeginPlay()
 {
 	Super::BeginPlay();
+	controllerRef = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	
 }
+
 
 
 // Called every frame
 void Asemi_cat::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
 
+	Super::Tick(DeltaTime);	
+	
+	if (controllerRef != NULL)
+	{
+		if (controllerRef->WasInputKeyJustPressed(EKeys::E))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Key E as pressed"));
+			PlayAnimMontage(callMe);
+			GetWorld()->SpawnActor<AActor>(SpawnYoBoi, GetActorLocation(), GetActorRotation());
+			
+			
+
+			
+		}
+	}
 }
 
 // Called to bind functionality to input

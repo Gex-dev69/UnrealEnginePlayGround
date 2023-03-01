@@ -25,6 +25,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 		float TurnRateGamepad;
 
+	/**Call Anime */
+	UPROPERTY(EditAnywhere, Category = Gameplay)
+		class UAnimMontage* callMe;
+	UPROPERTY(EditAnywhere, Category = Gameplay)
+		class TSubclassOf<AActor> SpawnYoBoi;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -34,7 +40,6 @@ protected:
 
 	/** Called for side to side input */
 	void MoveRight(float Value);
-
 	/**
 	 * Called via input to turn at a given rate.
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
@@ -63,5 +68,7 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+private:
+	APlayerController* controllerRef;
 
 };
