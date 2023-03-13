@@ -72,3 +72,7 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Private files
+Source/playground/Characters/null/*
+Content/ThirdPerson/null/*
