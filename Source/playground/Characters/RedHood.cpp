@@ -2,14 +2,20 @@
 
 #include "RedHood.h"
 #include "Camera/CameraComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ARedHood
+
+UAudioComponent* AudioComponent;
+FVector CharacterVelocity;
+FTimerHandle MusicTimer;
 
 ARedHood::ARedHood()
 {
@@ -50,9 +56,52 @@ ARedHood::ARedHood()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
+void ARedHood::BeginPlay()
+{
+	Super::BeginPlay();
+	ControllerRef = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	AudioComponent = UGameplayStatics::SpawnSoundAttached(music, GetRootComponent(), NAME_None, FVector::ZeroVector, EAttachLocation::SnapToTarget, true, true);
+	AudioComponent->SetPaused(true);
+	GetWorld()->GetTimerManager().SetTimer(MusicTimer, this, &ARedHood::RockThemeSong, 0.5f, true);
+}
 
-//////////////////////////////////////////////////////////////////////////
-// Input
+void ARedHood::RockThemeSong()
+{
+	CharacterVelocity = GetVelocity();
+	float Movement = CharacterVelocity.SizeSquared();
+	FString Message = FString::Printf(TEXT("Velocity: %.6f"), Movement);
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, Message);
+	if (Movement > 0.0f)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, "Moving");
+		
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, "Playing Audio");
+			AudioComponent->SetPaused(false);
+		
+	}
+	else if(Movement <= 0.0f)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, "Not Moving");
+
+		if (AudioComponent->IsPlaying())
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, "Not Playing Audio");
+			AudioComponent->SetPaused(true);
+		}
+	}
+}
+void ARedHood::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (ControllerRef != nullptr && ControllerRef->WasInputKeyJustPressed(EKeys::E))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("From Red Hood"));
+		PlayAnimMontage(callMe);
+	}
+
+	
+}
 
 void ARedHood::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -61,6 +110,10 @@ void ARedHood::SetupPlayerInputComponent(class UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ARedHood::StartRunning);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ARedHood::StopRunning);
+	
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &ARedHood::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &ARedHood::MoveRight);
 
@@ -77,6 +130,20 @@ void ARedHood::SetupPlayerInputComponent(class UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindTouch(IE_Released, this, &ARedHood::TouchStopped);
 }
 
+void ARedHood::StartRunning()
+{
+	for(float i = 0;i < 500.0;i++)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = i;
+	}
+	
+}
+
+void ARedHood::StopRunning()
+{
+	// Use for loop maybe to slowly decrease the speed instead of BLAK into Walk animation
+	GetCharacterMovement()->MaxWalkSpeed = 120.0f;
+}
 void ARedHood::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
 	Jump();

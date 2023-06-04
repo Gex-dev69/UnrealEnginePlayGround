@@ -7,8 +7,8 @@
 AplaygroundGameMode::AplaygroundGameMode()
 	: Super()
 {
-	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPerson/Blueprints/BP_FirstPersonCharacter"));
+	// set default pawn class to our Blueprinted character Blueprint
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/ThirdPerson/Squirrl/Mysemi_cat"));
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
 
 }

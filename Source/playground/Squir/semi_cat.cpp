@@ -11,6 +11,11 @@
 #include <Kismet/GameplayStatics.h>
 #include "Animation/AnimMontage.h"
 
+
+
+float vv = 1.0f;
+FTimerHandle visibilityTimerHandler;
+
 // Sets default values
 Asemi_cat::Asemi_cat()
 {
@@ -44,7 +49,7 @@ Asemi_cat::Asemi_cat()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = 200.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow camera
@@ -58,7 +63,15 @@ void Asemi_cat::BeginPlay()
 {
 	Super::BeginPlay();
 	controllerRef = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->OnMontageEnded.AddDynamic(this, &Asemi_cat::OnMontageEnded);
+	}
+	MyMaterialInstance = GetMesh()->CreateAndSetMaterialInstanceDynamic(0);
 	
+
+
 }
 
 
@@ -69,20 +82,18 @@ void Asemi_cat::Tick(float DeltaTime)
 
 	Super::Tick(DeltaTime);	
 	
-	if (controllerRef != NULL)
-	{
-		if (controllerRef->WasInputKeyJustPressed(EKeys::E))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Key E as pressed"));
-			PlayAnimMontage(callMe);
-			GetWorld()->SpawnActor<AActor>(SpawnYoBoi, GetActorLocation(), GetActorRotation());
-			
-			
-
-			
-		}
-	}
+	// if (controllerRef != NULL)
+	// {
+	// 	if (controllerRef->WasInputKeyJustPressed(EKeys::E))
+	// 	{
+	// 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Key E as pressed"));
+	// 		PlayAnimMontage(callMe);
+	// 		GetWorld()->SpawnActor<AActor>(SpawnYoBoi, GetActorLocation(), GetActorRotation());
+	// 	}
+	// }
 }
+
+
 
 // Called to bind functionality to input
 void Asemi_cat::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -93,6 +104,7 @@ void Asemi_cat::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Action 1", IE_Pressed, this, &Asemi_cat::SpawnSlaver);
 
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &Asemi_cat::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &Asemi_cat::MoveRight);
@@ -108,6 +120,7 @@ void Asemi_cat::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &Asemi_cat::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &Asemi_cat::TouchStopped);
+	
 }
 
 
@@ -159,5 +172,40 @@ void Asemi_cat::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
+	}
+}
+
+void Asemi_cat::SpawnSlaver()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Key E as pressed"));
+	PlayAnimMontage(callMe);
+	
+}
+
+void Asemi_cat::DelayedFunction()
+{
+	vv = vv - 0.1f;
+	float Visibility = MyMaterialInstance->K2_GetScalarParameterValue("Appearance");
+	Visibility = Visibility - 0.04f; 
+	MyMaterialInstance->SetScalarParameterValue("Appearance", Visibility);
+	
+	FString Message = FString::Printf(TEXT("Visibility: %.6f"), Visibility);
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White, Message);
+	if (Visibility <= 0.0f)
+    {
+        // Condition to stop the loop
+        GetWorld()->GetTimerManager().ClearTimer(visibilityTimerHandler);
+    }
+}
+void Asemi_cat::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	/*if (Montage == callMe)
+	{
+		GetWorld()->SpawnActor<AActor>(SpawnYoBoi, GetActorLocation(), GetActorRotation());
+	}*/
+	if (MyMaterialInstance)
+	{
+		float Delay = 0.5f;  // Adjust the delay time in seconds
+		GetWorld()->GetTimerManager().SetTimer(visibilityTimerHandler, this, &Asemi_cat::DelayedFunction, Delay, true);
 	}
 }

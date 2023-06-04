@@ -21,13 +21,15 @@ class PLAYGROUND_API ARedHood : public ACharacter
 
 public:
 	ARedHood();
-
+	virtual void Tick(float DeltaTime) override;
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 		float TurnRateGamepad;
 
 protected:
 
+	void StartRunning();
+	void StopRunning();
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
 
@@ -53,6 +55,8 @@ protected:
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
 protected:
+	// Called when the game starts or when spawned
+    	virtual void BeginPlay() override;
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
@@ -62,5 +66,15 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UPROPERTY(EditAnywhere, Category = Gameplay)
+	class UAnimMontage* callMe;
+
+	UPROPERTY(EditAnywhere, Category = Gameplay)
+	class USoundBase* music;
+
+	void RockThemeSong();
+private:
+	APlayerController* ControllerRef;
 };
 
