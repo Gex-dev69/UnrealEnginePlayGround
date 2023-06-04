@@ -48,6 +48,7 @@ SourceArt/**/*.tga
 # Binary Files
 Binaries/*
 Plugins/*/Binaries/*
+Plugins/*
 
 # Builds
 Build/*
@@ -56,6 +57,12 @@ Build/*
 !Build/*/
 Build/*/**
 !Build/*/PakBlacklist*.txt
+
+# Size too big
+Source/playground/Characters/null/*
+Source/playground/Characters/chun.cpp
+Source/playground/Characters/chun.h
+Content/ThirdPerson/null/*
 
 # Don't ignore icon files in Build
 !Build/**/*.ico
@@ -73,6 +80,4 @@ Plugins/*/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 
-# Private files
-Source/playground/Characters/null/*
-Content/ThirdPerson/null/*
+
