@@ -90,6 +90,7 @@ void ARedHood::RockThemeSong()
 		}
 	}
 }
+
 void ARedHood::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
